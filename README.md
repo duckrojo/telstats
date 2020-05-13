@@ -10,4 +10,5 @@ import telstats
 ts = telstats.TelStats(site_ref="Chile")
 ts.plot_fraction_region()
 ts.plot_area_time()
+ts.show()
 ```

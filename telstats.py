@@ -152,21 +152,24 @@ class TelStats:
     def plot_area_time(self,
                        xlabel="year",
                        ylabel='Area ($m^2$)',
-                       title="Only for telescopes with diameters larger than {real_min_diameter:.1f}m",):
+                       title="Only for telescopes with diameters larger than {real_min_diameter:.1f}m",
+                       axes=None,
+                       ):
         tels = self.filter_diameter()
 
         tels_opt, tels_mm, tels_opt_region, tels_mm_region = self.select_range_region(tels)
 
-        f, ax = plt.subplots(figsize=(10, 8))
-        ax.semilogy(tels_mm['Built'], tels_mm['area'], 'kv', label="mm")
-        ax.semilogy(tels_opt['Built'], tels_opt['area'], 'k^', label="opt")
-        ax.semilogy(tels_mm_region['Built'], tels_mm_region['area'], 'rv', label=f"mm@{self.site_ref}")
-        ax.semilogy(tels_opt_region['Built'], tels_opt_region['area'], 'r^', label=f"opt@{self.site_ref}")
-        ax.legend()
+        if axes is None:
+            f, axes = plt.subplots(figsize=(10, 8))
+        axes.semilogy(tels_mm['Built'], tels_mm['area'], 'kv', label="mm")
+        axes.semilogy(tels_opt['Built'], tels_opt['area'], 'k^', label="opt")
+        axes.semilogy(tels_mm_region['Built'], tels_mm_region['area'], 'rv', label=f"mm@{self.site_ref}")
+        axes.semilogy(tels_opt_region['Built'], tels_opt_region['area'], 'r^', label=f"opt@{self.site_ref}")
+        axes.legend()
 
-        self.set_custom_titles(ax, xlabel, ylabel, title)
+        self.set_custom_titles(axes, xlabel, ylabel, title)
 
-        return ax
+        return axes
 
     def set_custom_titles(self, ax, xlabel, ylabel, title):
         ax.set_xlabel(xlabel.format(**{name: getattr(self, name)
@@ -193,19 +196,21 @@ class TelStats:
                              xlabel="year",
                              ylabel="Percentage of area in Chile",
                              title="Only for telescopes with diameters larger than {real_min_diameter:.1f}m",
+                             axes=None,
                              ):
         bins = np.arange(from_year, until_year, dbin)
         cums = self.get_cumulatives(bins)
 
-        f, ax = plt.subplots(figsize=(10, 8))
-        ax.bar(bins-dbin/2, 100*cums[2]/cums[0], label="opt", width=dbin*0.9, align="center")
-        ax.plot(bins-dbin/2, 100*cums[3]/cums[1], label="mm", color='red')
-        ax.plot(bins-dbin/2, 100*(cums[2]+cums[3])/(cums[0]+cums[1]), color='black', label="opt+mm")
+        if axes is None:
+            f, axes = plt.subplots(figsize=(10, 8))
+        axes.bar(bins - dbin / 2, 100 * cums[2] / cums[0], label="opt", width=dbin * 0.9, align="center")
+        axes.plot(bins - dbin / 2, 100 * cums[3] / cums[1], label="mm", color='red')
+        axes.plot(bins - dbin / 2, 100 * (cums[2] + cums[3]) / (cums[0] + cums[1]), color='black', label="opt+mm")
 
-        self.set_custom_titles(ax, xlabel, ylabel, title)
+        self.set_custom_titles(axes, xlabel, ylabel, title)
         plt.legend()
 
-        return ax
+        return axes
 
     @staticmethod
     def show():
