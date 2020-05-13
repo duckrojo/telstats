@@ -180,6 +180,21 @@ class TelStats:
                                      for name in re.findall('{(.+?)(?::.+)?}', title)}))
 
     def get_cumulatives(self, bins):
+        """
+        Get cumulative areas grouped by years binned
+
+        Parameters
+        ----------
+        bins: list
+           years in which to bin
+
+        Returns
+        -------
+        tuple
+           Returns the cumulative value of areas in
+        [opt_total, mm_total, opt_in_region, mm_in_region]
+
+        """
         tels = self.filter_diameter()
         tels_split = self.select_range_region(tels)
 
@@ -197,15 +212,60 @@ class TelStats:
                              ylabel="Percentage of area in Chile",
                              title="Only for telescopes with diameters larger than {real_min_diameter:.1f}m",
                              axes=None,
+                             mm_style="line", opt_style="bar", both_style="line",
+                             mm_params=None, opt_params=None, both_params=None
                              ):
+        """
+
+        Parameters
+        ----------
+        dbin: float
+           Bin every this many years. Default is 5
+        from_year: int
+           Default is 1960
+        until_year: int
+           Default is 2030
+        xlabel: str
+        ylabel: str
+        title: str
+        axes: matplotlib.axes
+        mm_style: ["none"|"line"|"bar"]
+        opt_style: ["none"|"line"|"bar"]
+        both_style: ["none"|"line"|"bar"]
+        mm_params: dict
+           Plotting parameters for mm data
+        opt_params: dict
+           Plotting parameters for optical data
+        both_params: dict
+           Plotting parameters for optical+mm data
+
+        Returns
+        -------
+           matplotlib.axes instance used
+
+        """
         bins = np.arange(from_year, until_year, dbin)
         cums = self.get_cumulatives(bins)
 
         if axes is None:
             f, axes = plt.subplots(figsize=(10, 8))
-        axes.bar(bins - dbin / 2, 100 * cums[2] / cums[0], label="opt", width=dbin * 0.9, align="center")
-        axes.plot(bins - dbin / 2, 100 * cums[3] / cums[1], label="mm", color='red')
-        axes.plot(bins - dbin / 2, 100 * (cums[2] + cums[3]) / (cums[0] + cums[1]), color='black', label="opt+mm")
+        labels = ["opt", "mm", "opt+mm"]
+        fracs = [cums[2]/cums[0], cums[3]/cums[1], (cums[2]+cums[3])/(cums[0]+cums[1])]
+        styles = [opt_style, mm_style, both_style]
+        params = [{} if par is None else par for par in [opt_params, mm_params, both_params]]
+        for idx, color in enumerate(['blue', 'red', 'black']):
+            if 'color' not in params[idx]:
+                params[idx]['color'] = color
+
+        for style, param, frac, label in zip(styles, params, fracs, labels):
+            if style == 'bar':
+                axes.bar(bins - dbin / 2, 100 * frac, label=label, width=dbin * 0.9, align="center", **param)
+            elif style == 'line':
+                axes.plot(bins - dbin / 2, 100 * frac, label=label, **param)
+            elif style == 'none':
+                pass
+            else:
+                print(f"WARNING: plotting style '{style}' unrecognized for '{label}' ")
 
         self.set_custom_titles(axes, xlabel, ylabel, title)
         plt.legend()
