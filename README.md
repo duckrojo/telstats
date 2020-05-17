@@ -1,6 +1,6 @@
 # telstats
 A Class to do quick worldwide telescope statistics. Optical telescope data is read directly
-from wikipedia tables. Code works with table format of May 13th, 2020. If the format of those
+from wikipedia tables. Code works with table format as of May 2020. If the format of those
 tables change, code would need to be adapted.
 
 Try:
@@ -22,3 +22,8 @@ Sample output
 ![Using `site_ref="USA"`](./usa-ref-total.png)
 ![Using `mm_style="none", both_style="none", opt_style="line"`](./chile-ref-lines.png)
 ![plot_area_time](./area-time.png)
+
+
+**Author**:
+ * Patricio Rojo <pato@das.uchile.cl>
+ * Contributors welcome!
