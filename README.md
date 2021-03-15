@@ -11,7 +11,7 @@ import telstats
 ts = telstats.TelStats()
 ts.plot_fraction_region(site_ref="Chile", min_diameter=3)
 ts.plot_area_time()
-ts.show()
+ts.plot_show()
 ```
 
 try options `x_style=bar|line|none` and `x_params={<plot_custom_params>}`
