@@ -70,14 +70,14 @@ class TelStats:
             print(tels_mm)
         if clear_list:
             self.all_telescopes = pd.DataFrame()
-        self.all_telescopes = pd.concat([self.all_telescopes, tels_mm])
+        self.all_telescopes = pd.concat([self.all_telescopes, tels_mm], ignore_index=True)
 
     def add_future_tels(self,
                         clear_list=False,
                         verbose=False,
                         ):
         future = {"Name": ["E-ELT", "GMT", "TMT"],
-                  self.col_built[0]: [2025, 2029, 2029],
+                  self.col_built[0]: [2025, 2029, 2033],
                   "area": [np.pi * (39.3 / 2) ** 2, 6 * np.pi * (8.4 / 2) ** 2, np.pi * 15 ** 2],
                   "Site": ["Chile", "Chile", "Spain"],
                   "range": ["optical"] * 3,
@@ -89,7 +89,7 @@ class TelStats:
             print(tels_fut)
         if clear_list:
             self.all_telescopes = pd.DataFrame()
-        self.all_telescopes = pd.concat([self.all_telescopes, tels_fut])
+        self.all_telescopes = pd.concat([self.all_telescopes, tels_fut], ignore_index=True)
 
     def add_wikipedia_tels(self,
                            largest_url='https://en.wikipedia.org/wiki/List_of_largest_optical_reflecting_telescopes',
@@ -217,7 +217,8 @@ class TelStats:
             ax.set_title(title.format(**{name: getattr(self, name)
                                          for name in re.findall('{(.+?)(?::.+)?}', title)}))
 
-    def get_cumulatives(self, bins, min_diameter=None, site_ref=None):
+    def get_cumulatives(self, bins,
+                        min_diameter=None, site_ref=None):
         """
         Get cumulative areas grouped by years binned
 
@@ -243,6 +244,8 @@ class TelStats:
         digs = [np.digitize(tels_sub[self.col_built[0]], bins, right=True) for tels_sub in tels_split]
         cums = [np.array([tels_sub['area'].loc[digs_sub <= i].sum() for i in range(len(bins))])
                 for tels_sub, digs_sub in zip(tels_split, digs)]
+
+        print(f"total opt {cums[0][-1]}, region {cums[2][-1]}")
 
         return cums
 
@@ -331,7 +334,7 @@ class TelStats:
             fracs = [[cums[2] / cums[0], cums[3] / cums[1], (cums[2] + cums[3]) / (cums[0] + cums[1])],
                      [cums[0], cums[1], cums[0]+cums[1]]]
         styles = [[opt_style, mm_style, both_style],
-                  [opt_total_style, mm_total_style], total_style]
+                  [opt_total_style, mm_total_style, total_style]]
         params = [[opt_params, mm_params, both_params],
                   [opt_total_params, mm_total_params, total_params]]
         defaults = {'color': [['blue', 'red', 'black'], ['green', 'yellow', 'pink']],
