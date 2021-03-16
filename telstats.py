@@ -40,7 +40,6 @@ class TelStats:
         self.add_future_tels()
         self.add_mm_tels()
 
-
     def add_mm_tels(self,
                     clear_list=False,
                     verbose=False,
@@ -53,8 +52,8 @@ class TelStats:
                           "USA", "USA", "Space", "Chile",
                           "Greenland", "France", "USA"],
                  self.col_built[0]: [2014, 2003, 1984, 2007,
-                           1993, 1987, 2009, 2005,
-                           2017, 2020, 2013],
+                                     1993, 1987, 2009, 2005,
+                                     2017, 2020, 2013],
                  "area": [54 * np.pi * 6 ** 2 + 12 * np.pi * 3.5 ** 2, 8 * np.pi * 3 ** 2, np.pi * 15 ** 2,
                           np.pi * 5 ** 2,
                           np.pi * 5 ** 2, np.pi * 7.5 ** 2, np.pi * 1.75 ** 2, np.pi * 7.5 ** 2,
@@ -130,8 +129,8 @@ class TelStats:
         to_fill = tels[self.col_built[0]].isna()
 
         for col in self.col_built[1:]:
-            available = tels[col].isna() == False
-            tels[self.col_built[0]][to_fill*available] = tels[col][to_fill*available]
+            available = ~tels[col].isna()
+            tels.loc[to_fill & available, self.col_built[0]] = tels[col][to_fill & available]
 
         tels = tels[['Name', self.col_built[0], 'area', 'range', 'Site']]
         dropping = tels.loc[(tels.isna()).sum(1) > 0]
@@ -242,10 +241,8 @@ class TelStats:
         tels_split = self.select_range_region(tels)
 
         digs = [np.digitize(tels_sub[self.col_built[0]], bins, right=True) for tels_sub in tels_split]
-        cums = [np.array([tels_sub['area'].loc[digs_sub <= i].sum() for i in range(len(bins))])
+        cums = [np.array([tels_sub['area'].loc[digs_sub <= i].sum() for i in range(len(list(bins)))])
                 for tels_sub, digs_sub in zip(tels_split, digs)]
-
-        print(f"total opt {cums[0][-1]}, region {cums[2][-1]}")
 
         return cums
 
@@ -279,6 +276,10 @@ class TelStats:
 
         Parameters
         ----------
+        min_diameter: float
+           Minimum diameter to consider
+        site_ref: str
+           region to filter
         ylabel_right: str
            label for right axis
         dbin: float
@@ -359,7 +360,7 @@ class TelStats:
             ax.legend(loc=2-idx)
         self._set_custom_titles(axes, xlabel, ylabel, title)
         if len(all_axes) == 2:
-            self._set_custom_titles(ax, None, ylabel_right, None)
+            self._set_custom_titles(all_axes[1], None, ylabel_right, None)
 
         return axes
 
