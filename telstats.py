@@ -202,7 +202,8 @@ class TelStats:
                        title="Only for telescopes with diameters larger than {real_min_diameter:.1f}m",
                        axes=None,
                        min_diameter=2,
-                       site_ref=None
+                       site_ref=None,
+                       titles_style=None,
                        ):
         tels = self.filter_diameter(min_diameter=min_diameter)
         tels = self.filter_region(data=tels, site_ref=site_ref)
@@ -217,20 +218,25 @@ class TelStats:
         axes.semilogy(tels_opt_region[self.col_built[0]], tels_opt_region['area'], 'r^', label=f"opt@{self.site_ref}")
         axes.legend()
 
-        self._set_custom_titles(axes, xlabel, ylabel, title)
+        self._set_custom_titles(axes, xlabel, ylabel, title, titles_style)
 
         return axes
 
-    def _set_custom_titles(self, ax, xlabel, ylabel, title):
+    def _set_custom_titles(self, ax, xlabel, ylabel, title, props):
+        if props is None:
+            props = {}
         if xlabel is not None:
             ax.set_xlabel(xlabel.format(**{name: getattr(self, name)
-                                           for name in re.findall('{(.+?)(?::.+)?}', xlabel)}))
+                                           for name in re.findall('{(.+?)(?::.+)?}', xlabel)}),
+                          **props)
         if ylabel is not None:
             ax.set_ylabel(ylabel.format(**{name: getattr(self, name)
-                                           for name in re.findall('{(.+?)(?::.+)?}', ylabel)}))
+                                           for name in re.findall('{(.+?)(?::.+)?}', ylabel)}),
+                          **props)
         if title is not None:
             ax.set_title(title.format(**{name: getattr(self, name)
-                                         for name in re.findall('{(.+?)(?::.+)?}', title)}))
+                                         for name in re.findall('{(.+?)(?::.+)?}', title)}),
+                         **props)
 
     def get_cumulatives(self, bins,
                         min_diameter=None, site_ref=None):
@@ -276,6 +282,7 @@ class TelStats:
                              dbin=5,
                              from_year=1960,
                              until_year=2040,
+                             titles_style=None,
                              xlabel="year",
                              ylabel="Percentage of area in ",
                              ylabel_right="Total telescope area",
@@ -286,12 +293,14 @@ class TelStats:
                              opt_total_style="line", mm_total_style="none", total_style="none",
                              opt_total_params=None, mm_total_params=None,   total_params=None,
                              site_ref=None, min_diameter=None,
+                             show_legend=True,
                              ):
         """
         Plot percentage of telescope area in region
 
         Parameters
         ----------
+        show_legend
         min_diameter: float
            Minimum diameter to consider
         site_ref: str
@@ -307,6 +316,7 @@ class TelStats:
         xlabel: str
         ylabel: str
         title: str
+        titles_style: str
         axes: matplotlib.axes
         mm_style: ["none"|"line"|"bar"]
         opt_style: ["none"|"line"|"bar"]
@@ -344,7 +354,7 @@ class TelStats:
 
         if axes is None:
             f, axes = plt.subplots(figsize=(10, 8))
-        labels = [["% opt", "% mm", "% opt+mm"],
+        labels = [["% from optical telescopes", "% from mm telescopes", "% from both optical&mm telescoepes"],
                   ["total opt", "total mm", "total opt+mm"]]
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", ".+true_divide")
@@ -373,10 +383,11 @@ class TelStats:
                     pass
                 else:
                     print(f"WARNING: plotting style '{style}' unrecognized for '{label}' ")
-            ax.legend(loc=2-idx)
-        self._set_custom_titles(axes, xlabel, ylabel, title)
+            if show_legend:
+                ax.legend(loc=2-idx)
+        self._set_custom_titles(axes, xlabel, ylabel, title, titles_style)
         if len(all_axes) == 2:
-            self._set_custom_titles(all_axes[1], None, ylabel_right, None)
+            self._set_custom_titles(all_axes[1], None, ylabel_right, None, titles_style)
 
         return axes
 
