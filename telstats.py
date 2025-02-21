@@ -117,18 +117,28 @@ class TelStats:
 
         # right now, the "largest" page has only one table, while the "large" has several: greather than
         # 2m (exhaustive), greater than 1m (selection), smaller than 1m (selection, not considered)
-        g3m = largest[1][:-1]
-        g2m = large[0]
-        g1m = large[1]
+        g3m = largest[0][:-1]
+        g2m = large[1]
+        g1m = large[2]
 
         all_telescopes = pd.concat([g3m, g2m, g1m], ignore_index=True)
         if self.min_diameter < 2:
             print("WARNING: Wikipedia list of telescopes smaller than 2m diameter is not complete")
 
         # numerizing and computing area
-        tels = all_telescopes.replace(
-            regex={r'\d+[–-](\d+)': r'\1', r'\d/(\d)': r'\1', r'.ref..+./ref.': '', r'TBA': np.nan,
-                   r's$': '', r'.+(\d\d\d\d)$': r'\1', r'\[\d+\]': ''})
+        replace_dict = {r'\d+[–-](\d+)': r'\1',
+
+                        }
+        replace_dict |= {r'\d/(\d)': r'\1',
+                         r'.ref..+./ref.': '',
+                         r'TBA': np.nan,
+                         r's$': '',}
+        replace_dict |= {r'.+(\d\d\d\d)$': r'\1',
+                         r'\[\d+\]': '',
+                        }
+        tels = all_telescopes.copy()
+        for k, v in replace_dict.items():
+            tels = tels.replace(k, v, regex=True)
         diameter = tels['Effective aperture'].str.extract(r'(?P<inches>[0-9.]+).in', expand=False)
         diameter = diameter.fillna(tels['Aperture'].str.extract(r'(?P<inches>[0-9.]+).in', expand=False))
         if 'Aper. in' in tels.columns:
@@ -398,3 +408,9 @@ class TelStats:
     @staticmethod
     def plot_ion():
         plt.ion()
+
+
+if __name__ == '__main__':
+    ts = TelStats()
+    ts.plot_fraction_region()
+

@@ -14,8 +14,8 @@ ts.plot_area_time()
 ts.plot_show()
 ```
 
-try options `x_style=bar|line|none` and `x_params={<plot_custom_params>}`
-for `x` any of `opt, mm, both, total, opt_total, mm_total` 
+try options `ZZ_style=bar|line|none` and `ZZ_params={<plot_custom_params>}`,
+where `ZZ` can be any of `opt, mm, both, total, opt_total, mm_total` 
 
 Sample output
 ![Using `site_ref="Chile", opt_total_style='none'`](chile-ref.png)
